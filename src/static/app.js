@@ -4,6 +4,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
 
+  // Add small stylesheet for participants UI
+  const style = document.createElement("style");
+  style.textContent = `
+    .activity-card { border: 1px solid #e1e4e8; padding: 12px; border-radius: 8px; margin: 8px 0; background: #fff; box-shadow: 0 1px 2px rgba(27,31,35,0.04); }
+    .activity-card h4 { margin: 0 0 6px 0; font-size: 1.05rem; }
+    .participants { margin-top: 10px; }
+    .participants-list { list-style: disc; margin: 6px 0 0 20px; padding: 0; }
+    .participants-list li { margin: 4px 0; font-size: 0.95rem; color: #24292e; display:flex; align-items:center; gap:8px; }
+    .participant-avatar { width:20px; height:20px; border-radius:50%; background:#0366d6; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:600; }
+    .participants-none { color:#6a737d; font-style:italic; }
+  `;
+  document.head.appendChild(style);
+
   // Function to fetch activities from API
   async function fetchActivities() {
     try {
@@ -25,9 +38,30 @@ document.addEventListener("DOMContentLoaded", () => {
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+
+          <div class="participants">
+            <strong>Participants:</strong>
+            <ul class="participants-list" aria-label="participants list"></ul>
+          </div>
         `;
 
         activitiesList.appendChild(activityCard);
+
+        // Populate participants list (pretty bullets with small avatar)
+        const listEl = activityCard.querySelector(".participants-list");
+        if (details.participants && details.participants.length > 0) {
+          details.participants.forEach((p) => {
+            const li = document.createElement("li");
+            const initials = (p.split("@")[0] || "").slice(0,2).toUpperCase();
+            li.innerHTML = `<span class="participant-avatar" aria-hidden="true">${initials || "U"}</span> <span class="participant-email">${p}</span>`;
+            listEl.appendChild(li);
+          });
+        } else {
+          const li = document.createElement("li");
+          li.className = "participants-none";
+          li.textContent = "No participants yet";
+          listEl.appendChild(li);
+        }
 
         // Add option to select dropdown
         const option = document.createElement("option");
